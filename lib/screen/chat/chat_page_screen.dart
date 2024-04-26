@@ -80,58 +80,105 @@ class _ChatPageScreenState extends State<ChatPageScreen> {
             child: CircularProgressIndicator(),
           );
         }
-        return ListView(
-          children: snapshot.data!.docs
-              .map(
-                (e) => _buildMessageItems(e),
-              )
-              .toList(),
+        var data = snapshot.data!.docs;
+        return ListView.builder(
+          itemCount: data.length,
+          itemBuilder: (BuildContext context, int index) {
+            Map<String, dynamic> json = data[index].data() as Map<String, dynamic>;
+            var alignment = (json['sender_id'] == _firebaseAuth.currentUser!.uid)
+                ? Alignment.centerRight
+                : Alignment.centerLeft;
+            return Container(
+              margin: const EdgeInsets.only(top: 5),
+
+              alignment: alignment,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Container(
+                    decoration:  BoxDecoration(
+                        color: (json['sender_id'] == _firebaseAuth.currentUser!.uid)?Colors.blue: Colors.green,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(20),
+                          bottomRight: Radius.circular(20),
+                        )
+                    ),
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 10,),
+                      child: Text(
+                        json['message'],
+                        style: AppTextStyle.bold.copyWith(
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
         );
       },
     );
   }
 
-  Widget _buildMessageItems(DocumentSnapshot document) {
-    Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-    var alignment = (data['sender_id'] == _firebaseAuth.currentUser!.uid)
-        ? Alignment.centerRight
-        : Alignment.centerLeft;
-    return Container(
-      alignment: alignment,
-      child: Column(
+  // Widget _buildMessageItems(DocumentSnapshot document) {
+  //   Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+  //   var alignment = (data['sender_id'] == _firebaseAuth.currentUser!.uid)
+  //       ? Alignment.centerRight
+  //       : Alignment.centerLeft;
+  //   return Container(
+  //     margin: const EdgeInsets.only(top: 5),
+  //
+  //     alignment: alignment,
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.end,
+  //       children: [
+  //         Container(
+  //           decoration:  BoxDecoration(
+  //             color: (data['sender_id'] == _firebaseAuth.currentUser!.uid)?Colors.blue: Colors.green,
+  //             borderRadius: const BorderRadius.only(
+  //               topLeft: Radius.circular(20),
+  //               bottomRight: Radius.circular(20),
+  //             )
+  //           ),
+  //           child: Container(
+  //             margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 10,),
+  //             child: Text(
+  //               data['message'],
+  //               style: AppTextStyle.bold.copyWith(
+  //                 color: Colors.white,
+  //               ),
+  //             ),
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
+
+  Widget _buildMessageInput() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
         children: [
-          Text(
-            data['sender_email'],
-            style: AppTextStyle.regular,
+          Expanded(
+            child: TextField(
+              style: AppTextStyle.regular,
+              controller: _messageController,
+              decoration: InputDecoration(
+                  hintStyle: AppTextStyle.regular, hintText: 'Enter a message'),
+            ),
           ),
-          Text(
-            data['message'],
-            style: AppTextStyle.bold,
+          IconButton(
+            icon: const Icon(
+              Icons.send_sharp,
+              color: Colors.blue,
+            ),
+            onPressed: sendMessage,
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildMessageInput() {
-    return Row(
-      children: [
-        Expanded(
-          child: TextField(
-            style: AppTextStyle.regular,
-            controller: _messageController,
-            decoration: InputDecoration(
-                hintStyle: AppTextStyle.regular, hintText: 'Enter a message'),
-          ),
-        ),
-        IconButton(
-          icon: const Icon(
-            Icons.send_sharp,
-            color: Colors.blue,
-          ),
-          onPressed: sendMessage,
-        ),
-      ],
     );
   }
 }
